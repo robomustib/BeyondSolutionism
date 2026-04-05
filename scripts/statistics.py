@@ -19,7 +19,7 @@ def normalize_umlauts(text):
 
 
 def interpret_effect_size_rrb(r):
-    """Interpretation nach Kerby (2014) - vollständig"""
+    """Interpretation nach Kerby (2014)"""
     if abs(r) < 0.10:
         return "vernachlässigbar"
     elif abs(r) < 0.20:
@@ -32,7 +32,6 @@ def interpret_effect_size_rrb(r):
 
 
 def format_apa(label, h_stat, p_fdr, r_rb, ci_low, ci_high, d=None):
-    """APA-konforme Formatierung für Paper"""
     p_str = f"p < .001" if p_fdr < 0.001 else f"p = {p_fdr:.3f}"
     sig = "***" if p_fdr < 0.001 else "**" if p_fdr < 0.01 else "*" if p_fdr < 0.05 else "n.s."
     d_str = f", d = {d:.2f}" if d is not None else ""
@@ -40,7 +39,7 @@ def format_apa(label, h_stat, p_fdr, r_rb, ci_low, ci_high, d=None):
 
 
 class BiasAuditor:
-    """Statistical analysis for bias detection - vollständig wie v21_5"""
+    """Statistical analysis for bias detection"""
     
     def __init__(self):
         self.metrics = [
@@ -128,7 +127,6 @@ class BiasAuditor:
         
         return stats_results
 
-
 def main():
     """Main function"""
     BASE_DIR = Path(__file__).parent.parent
@@ -178,7 +176,6 @@ def main():
         json.dump(convert(results), f, indent=2, ensure_ascii=False)
     
     print(f"\nResults saved to {RESULTS_DIR / 'statistics_results.json'}")
-
 
 if __name__ == "__main__":
     main()
