@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-Configuration, seeds, and lexical lexicons for Beyond Solutionism
-Vollständig basierend auf beyond_solutionism_v21_5.py
-"""
-
 import os
 import random
 import numpy as np
