@@ -22,7 +22,7 @@ FIGURES_DIR = RESULTS_DIR / "figures"
 REPORTS_DIR = RESULTS_DIR / "reports"
 
 # ============================================================================
-# PROMPT NOISE FILTER (aus v21_5)
+# PROMPT NOISE FILTER
 # ============================================================================
 
 PROMPT_NOISE_FILTER = {
@@ -33,7 +33,7 @@ PROMPT_NOISE_FILTER = {
 }
 
 # ============================================================================
-# LEXICAL LEXICONS (vollständig aus v21_5)
+# LEXICAL LEXICONS
 # ============================================================================
 
 INSPIRATION_TERMS_BASE = [
@@ -105,7 +105,7 @@ AGENCY_WEIGHTS.update({
 })
 
 # ============================================================================
-# SBERT PROTOTYPES (vollständig aus clusterbased.py)
+# SBERT PROTOTYPES
 # ============================================================================
 
 SBERT_PROTOTYPES = {
