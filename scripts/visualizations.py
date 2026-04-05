@@ -15,9 +15,7 @@ sns.set_theme(style="whitegrid")
 sns.set_palette("colorblind")
 
 
-class AdvancedVisualizer:
-    """Generate all publication-ready visualizations - vollständig"""
-    
+class AdvancedVisualizer:    
     def __init__(self, df, stats, output_dir):
         self.df = df
         self.stats = stats
