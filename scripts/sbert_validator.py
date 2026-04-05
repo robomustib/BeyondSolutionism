@@ -32,7 +32,7 @@ class SBERTValidator:
         return self.model
     
     def validate(self, df, text_column='text'):
-        """Run construct validation on all texts (vollständig wie clusterbased.py)"""
+        """Run construct validation on all texts"""
         self.load_model()
         
         # Encode all texts
@@ -86,7 +86,7 @@ class SBERTValidator:
         return results
     
     def calculate_discriminant_validity(self, df, text_column='text'):
-        """Calculate discriminant validity (inter-construct correlations)"""
+        """Calculate discriminant validity"""
         self.load_model()
         
         texts = df[text_column].tolist()
