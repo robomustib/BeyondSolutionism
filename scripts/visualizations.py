@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-Publication-ready visualizations for bias analysis
-Vollständig basierend auf beyond_solutionism_v21_5.py
-"""
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
