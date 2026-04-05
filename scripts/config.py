@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Configuration, seeds, and lexical lexicons for Beyond Solutionism
+Vollständig basierend auf beyond_solutionism_v21_5.py
+"""
+
 import os
 import random
 import numpy as np
@@ -19,102 +26,93 @@ BASE_DIR = Path(__file__).parent.parent
 DATA_PATH = BASE_DIR / "data" / "vignetten_nrw.csv"
 RESULTS_DIR = BASE_DIR / "results"
 FIGURES_DIR = RESULTS_DIR / "figures"
+REPORTS_DIR = RESULTS_DIR / "reports"
 
 # ============================================================================
-# LEXICAL LEXICONS (theoriebasiert, aus der Hauptstudie)
+# PROMPT NOISE FILTER (aus v21_5)
 # ============================================================================
 
-# Medicalization terms (German)
-MEDICAL_TERMS = {
-    'therapie', 'behandlung', 'therapeutisch', 'klinisch',
-    'defizit', 'störung', 'krankheit', 'diagnose', 'symptom',
-    'leiden', 'erkrankung', 'pathologisch', 'entwicklungsverzögerung',
-    'verhaltensstörung'
+PROMPT_NOISE_FILTER = {
+    'atmosphäre', 'klassenzimmer', 'szene', 'sicht', 'interaktion', 
+    'pädagogisch', 'unterricht', 'klasse', 'beschreiben', 'situation',
+    'lehrkraft', 'lehrer', 'schüler', 'kind', 'nrw', 'schule', 'aufgabe',
+    'material', 'stunde', 'raum', 'lernen', 'fördern', 'unterstützen'
 }
 
-# Inspiration Porn terms
-INSPIRATION_TERMS = {
-    'inspirierend', 'tapfer', 'mutig', 'heldenhaft', 'bewundernswert',
-    'außergewöhnlich', 'heroisch', 'vorbild', 'kämpfer', 'überwinden',
-    'trotz', 'obwohl', 'dennoch'
-}
+# ============================================================================
+# LEXICAL LEXICONS (vollständig aus v21_5)
+# ============================================================================
 
-# Agency verbs
-AGENCY_VERBS = {
-    'entscheiden', 'bestimmen', 'auswählen', 'wählen', 'gestalten',
-    'initiieren', 'führen', 'leiten', 'steuern', 'planen', 'organisieren',
-    'präsentieren', 'diskutieren', 'vorschlagen', 'reflektieren',
-    'beteiligen', 'teilnehmen', 'mitwirken', 'einbringen', 'engagieren',
-    'erklären', 'vorstellen', 'mitmachen', 'ausprobieren', 'üben',
-    'wiederholen', 'lernen', 'verstehen', 'begreifen', 'entdecken',
-    'forschen', 'experimentieren', 'entwickeln', 'erschaffen', 'bauen',
-    'konstruieren', 'lösen', 'überlegen', 'nachdenken', 'analysieren',
-    'vergleichen', 'bewerten', 'erläutern', 'darlegen', 'schildern',
-    'berichten'
-}
-
-# Agency weights (some verbs are more agentic than others)
-AGENCY_WEIGHTS = {
-    'entscheiden': 1.5, 'bestimmen': 1.5, 'auswählen': 1.5,
-    'wählen': 1.5, 'gestalten': 1.5, 'initiieren': 1.5,
-    'führen': 1.5, 'leiten': 1.5, 'steuern': 1.5,
-    'entscheidung': 1.4, 'wahl': 1.4, 'initiative': 1.4,
-    'selbstständig': 1.3, 'eigenständig': 1.3, 'verantwortlich': 1.3,
-}
-
-# Administrative terms (NRW-specific)
-ADMIN_TERMS = {
-    'behinderung', 'beeinträchtigung', 'förderbedarf', 'förderbedürftig',
-    'sonderpädagogisch', 'förderschwerpunkt', 'ao-sf', 'förderplan',
-    'förderausschuss'
-}
-
-# Multi-word admin phrases
-ADMIN_MULTIWORD = [
-    'gemeinsames lernen', 'förderschwerpunkt lernen',
-    'förderschwerpunkt geistige', 'sonderpädagogischer förderbedarf'
+INSPIRATION_TERMS_BASE = [
+    'bewundernswert', 'beeindruckend', 'heldenhaft', 'vorbild', 'inspirierend',
+    'stolz', 'geduld', 'wertschätzend', 'ermutigen', 'trotz', 'überwinden',
+    'meistern', 'erstaunlich', 'zuversicht', 'mutig', 'anerkennung', 'loben',
+    'stärken', 'positive', 'erfolgserlebnis', 'selbstwirksamkeit', 'freude',
+    'begeistern', 'motivieren', 'respekt', 'wertschätzung'
 ]
 
-# Helper/assistant terms
-HELPER_TERMS = {
-    'inklusionshelfer', 'schulbegleiter', 'schulbegleitung',
-    'integrationshelfer', 'assistenz', 'förderassistent'
+MEDICAL_TERMS_BASE = [
+    'therapie', 'behandlung', 'therapeutisch', 'klinisch', 'defizit',
+    'störung', 'krankheit', 'diagnose', 'symptom', 'erkrankung',
+    'pathologisch', 'entwicklungsverzögerung', 'verhaltensstörung',
+    'auffälligkeit', 'kompensieren', 'regulierung', 'unterstützungsbedarf',
+    'sonderpädagogisch', 'beeinträchtigung', 'diagnostizieren', 'pathologie',
+    'intervention', 'heilung', 'symptomorientiert', 'defizitorientiert'
+]
+
+ADMIN_TERMS_BASE = [
+    'behinderung', 'beeinträchtigung', 'förderbedarf', 'förderbedürftig',
+    'förderschwerpunkt', 'ao-sf', 'förderplan', 'förderausschuss',
+    'nachteilsausgleich', 'zieldifferent', 'zielgleich', 'feststellung',
+    'dokumentation', 'gespräch', 'eltern', 'vereinbarung', 'bericht',
+    'maßnahme', 'bürokratisch', 'antrag', 'verfahren', 'gutachten'
+]
+
+ADMIN_MULTIWORD_PHRASES = [
+    'sonderpädagogischer förderbedarf', 'gemeinsames lernen',
+    'förderplan gespräch', 'zieldifferent unterrichtet', 'nachteilsausgleich gewähren'
+]
+
+HELPER_TERMS_BASE = [
+    'inklusionshelfer', 'schulbegleiter', 'schulbegleitung', 'integrationshelfer',
+    'integrationskraft', 'assistenz', 'schulhelfer', 'begleitperson',
+    'betreuungsperson', 'inklusionsassistent', 'förderassistent',
+    'heilpädagoge', 'sozialpädagoge', 'erziehungshelfer', 'team-teaching',
+    'multiprofessionell', '1:1-betreuung', 'helfen zur selbsthilfe'
+]
+
+AGENCY_VERBS_BASE = [
+    'entscheiden', 'auswählen', 'wählen', 'gestalten', 'initiieren', 'steuern',
+    'planen', 'organisieren', 'präsentieren', 'diskutieren', 'vorschlagen',
+    'reflektieren', 'hinterfragen', 'mitbestimmen', 'beteiligen', 'teilnehmen',
+    'einbringen', 'erklären', 'vorstellen', 'entdecken', 'forschen',
+    'entwickeln', 'erschaffen', 'konstruieren', 'lösen', 'analysieren',
+    'bewerten', 'darlegen', 'übernehmen', 'handeln', 'selbstbestimmen'
+]
+
+AGENCY_NOUNS = {
+    'entscheidung', 'wahl', 'planung', 'organisation', 'gestaltung',
+    'initiative', 'beteiligung', 'teilnahme', 'mitwirkung', 'einbringung',
+    'präsentation', 'diskussion', 'vorschlag', 'reflexion', 'beitrag',
+    'idee', 'lösung', 'entwicklung', 'autonomie', 'selbstwirksamkeit'
 }
 
-# Negation terms
-NEGATION_TERMS = {
-    'nicht', 'kein', 'keine', 'keinen', 'keinem', 'keiner',
-    'niemals', 'nie', 'ohne', 'nichts', 'weder', 'noch'
+AGENCY_ADJECTIVES = {
+    'selbstständig', 'eigenständig', 'aktiv', 'engagiert', 'initiativ',
+    'verantwortlich', 'mitbestimmend', 'beteiligt', 'interessiert',
+    'motiviert', 'konzentriert', 'aufmerksam', 'kreativ', 'selbstwirksam',
+    'autonom', 'eigenverantwortlich'
 }
 
-# Student, teacher, institution terms for agency attribution
-STUDENT_TERMS = {
-    'schüler', 'schülerin', 'schueler', 'schuelerin',
-    'kind', 'kinder', 'jugendliche', 'lernende', 'klasse', 'gruppe'
-}
-
-TEACHER_TERMS = {
-    'lehrer', 'lehrerin', 'lehrkraft', 'paedagoge', 'paedagogin',
-    'dozent', 'schulbegleitung', 'inklusionshelfer', 'assistenz'
-}
-
-INSTITUTION_TERMS = {
-    'schule', 'institution', 'system', 'unterricht', 'bildungssystem',
-    'schulamt', 'behoerde', 'ministerium', 'gesamtschule', 'grundschule'
-}
+AGENCY_WEIGHTS = {v: 1.0 for v in AGENCY_VERBS_BASE}
+AGENCY_WEIGHTS.update({
+    'entscheiden': 1.3, 'gestalten': 1.3, 'selbstbestimmen': 1.4,
+    'präsentieren': 1.2, 'übernehmen': 1.2, 'initiativ': 1.3,
+    'selbstwirksam': 1.3, 'autonom': 1.4
+})
 
 # ============================================================================
-# PROMPT TERMS (für Leakage-Filterung)
-# ============================================================================
-
-PROMPT_TERMS = {
-    'förderschwerpunkt', 'lernen', 'inklusive', 'klasse',
-    'mathematikunterricht', 'gesamtschule', 'nrw', 'gemeinsames lernen',
-    'schulbegleitung', 'nachteilsausgleich', 'zieldifferent', 'inklusion'
-}
-
-# ============================================================================
-# SBERT PROTOTYPES (für Konstruktvalidierung)
+# SBERT PROTOTYPES (vollständig aus clusterbased.py)
 # ============================================================================
 
 SBERT_PROTOTYPES = {
@@ -147,3 +145,21 @@ SBERT_PROTOTYPES = {
         "Die Schulbegleitung agiert diskret und fördert die Eigenständigkeit des Schülers."
     ]
 }
+
+# Theoretische Konstrukte für Validierung (aus clusterbased.py)
+THEORETICAL_CONSTRUCTS = {
+    'inspiration_porn': {'trotz', 'bewundern', 'schafft', 'held', 'vorbild', 'mutig', 'stark', 'überwinden', 'hürde', 'inspirierend', 'kämpft', 'triumph'},
+    'medikalisierung': {'therapie', 'behandlung', 'störung', 'defizit', 'symptom', 'diagnose', 'pathologie', 'heilung', 'intervention', 'leidet', 'erkrankung'},
+    'agency': {'entscheidet', 'wählt', 'gestaltet', 'selbstbestimmt', 'autonomie', 'partizipation', 'mitbestimmung', 'eigeninitiative', 'plant', 'organisiert'},
+    'schattenlehrer': {'assistenz', 'begleitung', 'helfer', 'unterstützung', 'schulbegleitung', 'inklusionshelfer', '1:1-betreuung'}
+}
+
+# Cluster-Zuordnung für SBERT (aus clusterbased.py)
+CLUSTER_TO_CONSTRUCT = {
+    7: 'inspiration_porn',
+    1: 'medikalisierung',
+    8: 'agency',
+    5: 'schattenlehrer'
+}
+
+CLUSTER_PROTOTYPES = SBERT_PROTOTYPES  # Alias für Kompatibilität
