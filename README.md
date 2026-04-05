@@ -10,17 +10,17 @@ git clone https://github.com/yourusername/beyond-solutionism-replication.git
 cd beyond-solutionism-replication
 ```
 
-# Install dependencies
+## Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-# Download German spaCy model
+## Download German spaCy model
 ```bash
 python -m spacy download de_core_news_sm
 ```
 
-# Data
+## Data
 The file data/vignetten_nrw.csv contains the 500 generated vignettes
 and must be present for the analysis. It includes the following columns:
 
@@ -33,7 +33,7 @@ and must be present for the analysis. It includes the following columns:
 | `text` | The generated vignette text |
 | `iteration` | Generation iteration number |
 
-# Execution
+## Execution
 Full Pipeline (Recommended)
 ```bash
 python scripts/full_pipeline.py
@@ -49,7 +49,7 @@ This will:
 - Generate all publication-ready figures
 - Create a comprehensive report
 
-# Individual Modules
+## Individual Modules
 
 ## Only statistical analysis (requires analyzed_data.csv)
 
@@ -132,7 +132,7 @@ Copyright (c) 2026 Mustafa Bilgin
 If you use this software for your research, please cite it as follows:
 
 **APA Format:**
-> Bilgin, M. (2026). *Beyond Solutionism: A Critical Audit of Techno-Ableism in AI-Generated Educational Narratives* (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.17747599
+> Bilgin, M. (2026). *Beyond Solutionism: A Critical Audit of Techno-Ableism in AI-Generated Educational Narratives* (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.xxxxxxxx
 
 **BibTeX:**
 ```bibtex
@@ -143,8 +143,8 @@ If you use this software for your research, please cite it as follows:
   year         = {2026},
   publisher    = {Zenodo},
   version      = {1.0.0},
-  doi          = {10.5281/zenodo.17747599},
-  url          = {https://doi.org/10.5281/zenodo.17747599}
+  doi          = {10.5281/zenodo.xxxxxxxx},
+  url          = {https://doi.org/10.5281/zenodo.xxxxxxxx}
 }
 
 ```
