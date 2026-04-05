@@ -1,0 +1,28 @@
+# Core data science
+pandas==3.0.2
+numpy==2.4.4
+scipy==1.17.1
+
+# Machine learning
+scikit-learn==1.8.0
+statsmodels==0.16.0
+
+# NLP
+spacy==3.8.2
+sentence-transformers==3.4.1
+
+# Visualization
+matplotlib==3.10.2
+seaborn==0.14.0
+
+# Utilities
+tqdm==4.67.1
+python-dotenv==1.0.1
+
+# LLM APIs
+openai==1.62.0
+google-generativeai==0.9.0
+groq==0.16.0
+
+# Additional
+requests==2.33.0
