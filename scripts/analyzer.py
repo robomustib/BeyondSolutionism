@@ -33,7 +33,7 @@ class ContextSensitiveAnalyzer:
         except OSError:
             raise OSError("SpaCy model not found. Install with: python -m spacy download de_core_news_sm")
         
-        # Initialize lexicons (vollständig)
+        # Initialize lexicons
         self.inspiration_terms = set(INSPIRATION_TERMS_BASE)
         self.medical_terms = set(MEDICAL_TERMS_BASE)
         self.admin_terms = set(ADMIN_TERMS_BASE)
@@ -43,7 +43,7 @@ class ContextSensitiveAnalyzer:
         self.admin_phrases = ADMIN_MULTIWORD_PHRASES
     
     def score_text(self, text):
-        """Analyze a single text and return bias scores (vollständig wie v21_5)"""
+        """Analyze a single text and return bias scores"""
         if not isinstance(text, str) or len(text.strip()) < 20:
             return {k: 0.0 for k in ['medicalization', 'inspiration', 'agency', 'admin', 'shadow_helper']}
         
