@@ -1,54 +1,30 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 from pathlib import Path
 from sentence_transformers import SentenceTransformer, util
 from scipy.stats import pointbiserialr, spearmanr
+from sklearn.metrics import silhouette_score
+from sklearn.preprocessing import StandardScaler
 import json
 import warnings
 warnings.filterwarnings('ignore')
 
+# Import config
+from config import SBERT_PROTOTYPES, THEORETICAL_CONSTRUCTS, CLUSTER_TO_CONSTRUCT
 
-class SBERTValidator:
-    """SBERT-based construct validation for theoretical framing constructs"""
-    
+
+class SBERTValidator:    
     def __init__(self):
         self.model_name = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
         self.model = None
-        
-        # Optimized prototype sentences per construct (theoretically distinct)
-        self.prototypes = {
-            'inspiration_porn': [
-                "Trotz seiner Beeinträchtigung bewältigt er die Aufgabe mit bewundernswerter Stärke.",
-                "Ihr unerschütterlicher Mut und ihre positive Einstellung inspirieren die gesamte Klasse.",
-                "Er überwindet die Hürden mit einer Haltung, die alle zum Staunen bringt.",
-                "Was für ein heldenhafter Einsatz gegen die Widrigkeiten des Alltags.",
-                "Sein Wille ist wirklich beeindruckend – er gibt niemals auf."
-            ],
-            'medikalisierung': [
-                "Die Intervention zielt auf die Reduktion der diagnostizierten Defizite ab.",
-                "Therapeutische Maßnahmen werden nach symptomorientiertem Förderplan umgesetzt.",
-                "Der sonderpädagogische Unterstützungsbedarf erfordert gezielte Behandlungsschritte.",
-                "Auffälliges Verhalten wird als Symptom einer zugrundeliegenden Störung eingeordnet.",
-                "Die Diagnose zeigt eine Entwicklungsverzögerung im kognitiven Bereich."
-            ],
-            'agency': [
-                "Er wählt selbstständig die Strategie und begründet seine Entscheidung gegenüber der Klasse.",
-                "Der Schüler gestaltet den Lernprozess aktiv nach eigenen Vorstellungen mit.",
-                "Sie trifft die finale Auswahl des Themas und übernimmt die Verantwortung für das Ergebnis.",
-                "Autonomie und Partizipation stehen im Zentrum der pädagogischen Begleitung.",
-                "Er plant seinen Lernweg eigenständig und reflektiert seine Fortschritte."
-            ],
-            'schattenlehrer': [
-                "Die Schulbegleitung interveniert nur bei Bedarf und zieht sich dann bewusst zurück.",
-                "Die Assistenzkraft arbeitet nach dem Prinzip der Hilfe zur Selbsthilfe.",
-                "Unterstützung erfolgt unauffällig im Hintergrund, um Abhängigkeit zu vermeiden.",
-                "Die Rollenverteilung zwischen Lehrkraft und Inklusionshelfer ist klar und temporär begrenzt.",
-                "Die Schulbegleitung agiert diskret und fördert die Eigenständigkeit des Schülers."
-            ]
-        }
+        self.prototypes = SBERT_PROTOTYPES
+        self.theoretical_constructs = THEORETICAL_CONSTRUCTS
+        self.cluster_to_construct = CLUSTER_TO_CONSTRUCT
     
     def load_model(self):
-        """Load SBERT model (downloaded on first call)"""
+        """Load SBERT model"""
         if self.model is None:
             print(f"   Loading {self.model_name}...")
             self.model = SentenceTransformer(self.model_name)
@@ -56,21 +32,7 @@ class SBERTValidator:
         return self.model
     
     def validate(self, df, text_column='text'):
-        """
-        Run construct validation on all texts
-        
-        Args:
-            df: DataFrame with 'text' and 'condition' columns
-            text_column: Name of column containing text to analyze
-        
-        Returns:
-            dict: Validation results for each construct containing:
-                - r_cond: Point-biserial correlation with condition
-                - p_cond: p-value for correlation
-                - cohens_d: Effect size (Cohen's d)
-                - mean_similarity: Mean cosine similarity to prototypes
-                - std_similarity: Standard deviation of similarities
-        """
+        """Run construct validation on all texts (vollständig wie clusterbased.py)"""
         self.load_model()
         
         # Encode all texts
@@ -85,17 +47,16 @@ class SBERTValidator:
         for construct, prototypes in self.prototypes.items():
             print(f"\n   Validating construct: {construct}")
             
-            # Encode prototypes
             proto_embeddings = self.model.encode(prototypes, convert_to_tensor=True)
-            
-            # Calculate cosine similarities
             similarities = util.cos_sim(text_embeddings, proto_embeddings).cpu().numpy()
             mean_similarities = np.mean(similarities, axis=1)
+            max_similarities = np.max(similarities, axis=1)
+            median_similarities = np.median(similarities, axis=1)
             
-            # Convergence validity (correlation with condition)
+            # Convergence validity
             r_cond, p_cond = pointbiserialr(condition_binary, mean_similarities)
             
-            # Cohen's d from r (conversion formula)
+            # Cohen's d from r
             cohens_d = 2 * r_cond / np.sqrt(1 - r_cond**2) if abs(r_cond) < 0.99 else 0
             
             results[construct] = {
@@ -104,83 +65,62 @@ class SBERTValidator:
                 'cohens_d': float(cohens_d),
                 'mean_similarity': float(np.mean(mean_similarities)),
                 'std_similarity': float(np.std(mean_similarities)),
+                'mean_max': float(np.mean(max_similarities)),
+                'mean_median': float(np.mean(median_similarities)),
                 'significant': p_cond < 0.05
             }
             
             # Interpretation
             if p_cond < 0.05 and cohens_d > 0.2:
                 if cohens_d > 0.8:
-                    interpretation = "Valid (large effect)"
+                    interp = "Valid (large effect)"
                 elif cohens_d > 0.5:
-                    interpretation = "Valid (medium effect)"
+                    interp = "Valid (medium effect)"
                 else:
-                    interpretation = "Valid (small effect)"
+                    interp = "Valid (small effect)"
             else:
-                interpretation = "Not valid"
+                interp = "Not valid"
             
-            print(f"      r_cond = {r_cond:.3f}, p = {p_cond:.4f}, d = {cohens_d:.2f} → {interpretation}")
+            print(f"      r_cond = {r_cond:.3f}, p = {p_cond:.4f}, d = {cohens_d:.2f} → {interp}")
         
         return results
     
     def calculate_discriminant_validity(self, df, text_column='text'):
-        """
-        Calculate discriminant validity (inter-construct correlations)
-        
-        Returns:
-            DataFrame: Correlation matrix between constructs
-        """
+        """Calculate discriminant validity (inter-construct correlations)"""
         self.load_model()
         
-        # Encode all texts
         texts = df[text_column].tolist()
         text_embeddings = self.model.encode(texts, show_progress_bar=True, convert_to_tensor=True)
         
-        # Calculate similarity for each construct
         construct_scores = {}
         for construct, prototypes in self.prototypes.items():
             proto_embeddings = self.model.encode(prototypes, convert_to_tensor=True)
             similarities = util.cos_sim(text_embeddings, proto_embeddings).cpu().numpy()
             construct_scores[construct] = np.mean(similarities, axis=1)
         
-        # Correlation matrix
         df_scores = pd.DataFrame(construct_scores)
         corr_matrix = df_scores.corr(method='spearman')
         
         return corr_matrix
     
     def calculate_silhouette_score(self, df, text_column='text'):
-        """
-        Calculate silhouette score for construct separability
-        
-        Returns:
-            float: Silhouette score (higher = better separation)
-        """
-        from sklearn.metrics import silhouette_score
-        from sklearn.preprocessing import StandardScaler
-        
+        """Calculate silhouette score for construct separability"""
         self.load_model()
         
-        # Encode all texts
         texts = df[text_column].tolist()
         text_embeddings = self.model.encode(texts, show_progress_bar=True, convert_to_tensor=True)
         
-        # Calculate similarity for each construct
         construct_scores = {}
         for construct, prototypes in self.prototypes.items():
             proto_embeddings = self.model.encode(prototypes, convert_to_tensor=True)
             similarities = util.cos_sim(text_embeddings, proto_embeddings).cpu().numpy()
             construct_scores[construct] = np.mean(similarities, axis=1)
         
-        # Create feature matrix
         df_scores = pd.DataFrame(construct_scores)
         feature_matrix = df_scores.values
-        
-        # Standardize
         scaler = StandardScaler()
         feature_matrix_scaled = scaler.fit_transform(feature_matrix)
         
-        # Silhouette score (how well constructs separate)
-        # We need labels - using the construct with highest score as "label" for each text
         labels = np.argmax(feature_matrix_scaled, axis=1)
         
         if len(np.unique(labels)) > 1:
@@ -189,13 +129,49 @@ class SBERTValidator:
             sil_score = -1.0
         
         return sil_score
+    
+    def create_validation_summary(self, df, text_column='text'):
+        """Create complete validation summary like clusterbased.py"""
+        results = self.validate(df, text_column)
+        discriminant = self.calculate_discriminant_validity(df, text_column)
+        silhouette = self.calculate_silhouette_score(df, text_column)
+        
+        validation_results = []
+        for construct, res in results.items():
+            # Calculate discriminant correlations
+            other_constructs = [c for c in results.keys() if c != construct]
+            disc_corrs = {}
+            for other in other_constructs:
+                if other in discriminant.columns and construct in discriminant.index:
+                    disc_corrs[other] = discriminant.loc[construct, other]
+            max_discr = max(abs(v) for v in disc_corrs.values()) if disc_corrs else 0
+            
+            # Status
+            if res['p_cond'] < 0.05 and abs(res['r_cond']) > 0.15 and max_discr < 0.7:
+                status = "Valide"
+            elif res['p_cond'] < 0.05 and abs(res['r_cond']) > 0.10:
+                status = "Begrenzt valide"
+            else:
+                status = "Nicht valide"
+            
+            validation_results.append({
+                'construct': construct,
+                'corr_with_condition': res['r_cond'],
+                'p_value_condition': res['p_cond'],
+                'effect_size_cohens_d': res['cohens_d'],
+                'max_discriminance': max_discr,
+                'status': status
+            })
+        
+        return {
+            'validation_results': validation_results,
+            'silhouette_score': silhouette,
+            'discriminant_matrix': discriminant
+        }
 
 
 def main():
     """Main function"""
-    import sys
-    from pathlib import Path
-    
     BASE_DIR = Path(__file__).parent.parent
     DATA_PATH = BASE_DIR / "data" / "vignetten_nrw.csv"
     
@@ -204,8 +180,7 @@ def main():
     
     if not DATA_PATH.exists():
         print(f"Error: Data file not found at {DATA_PATH}")
-        print("Please ensure data/vignetten_nrw.csv exists")
-        sys.exit(1)
+        return
     
     df = pd.read_csv(DATA_PATH, encoding='utf-8')
     print(f"Loaded {len(df)} texts")
@@ -213,31 +188,22 @@ def main():
     
     validator = SBERTValidator()
     
-    # Run construct validation
     print("\n" + "=" * 60)
     print("SBERT CONSTRUCT VALIDATION")
     print("=" * 60)
     results = validator.validate(df)
     
-    # Calculate discriminant validity
     print("\n" + "=" * 60)
-    print("DISCRIMINANT VALIDITY (Inter-construct correlations)")
+    print("DISCRIMINANT VALIDITY")
     print("=" * 60)
     corr_matrix = validator.calculate_discriminant_validity(df)
     print(corr_matrix.round(3))
     
-    # Calculate silhouette score
     print("\n" + "=" * 60)
-    print("SILHOUETTE SCORE (Construct separability)")
+    print("SILHOUETTE SCORE")
     print("=" * 60)
     sil_score = validator.calculate_silhouette_score(df)
     print(f"Silhouette score: {sil_score:.3f}")
-    if sil_score > 0.25:
-        print("   → Good separation between constructs")
-    elif sil_score > 0.1:
-        print("   → Moderate separation between constructs")
-    else:
-        print("   → Poor separation between constructs (needs prototype optimization)")
     
     # Summary table
     print("\n" + "=" * 60)
@@ -259,12 +225,10 @@ def main():
     with open(RESULTS_DIR / "sbert_validation_results.json", 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
     
-    # Save correlation matrix
     corr_matrix.to_csv(RESULTS_DIR / "discriminant_validity_matrix.csv")
     
     print(f"\nResults saved to {RESULTS_DIR / 'sbert_validation_results.json'}")
     print(f"Correlation matrix saved to {RESULTS_DIR / 'discriminant_validity_matrix.csv'}")
-
 
 if __name__ == "__main__":
     main()
