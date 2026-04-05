@@ -1,13 +1,13 @@
 # BeyondSolutionism
 This repository contains all scripts and data required to reproduce the analyses for the study 
-"Beyond Solutionism: A Critical Audit of Techno-Ableism in AI-Generated Educational Narratives"
+**"Beyond Solutionism: A Critical Audit of Techno-Ableism in AI-Generated Educational Narratives"**
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/beyond-solutionism-replication.git
-cd beyond-solutionism-replication
+git clone https://github.com/robomustib/BeyondSolutionism.git
+cd BeyondSolutionism
 ```
 
 ## Install dependencies
@@ -21,7 +21,7 @@ python -m spacy download de_core_news_sm
 ```
 
 ## Data
-The file data/vignetten_nrw.csv contains the 500 generated vignettes
+The file `data/vignetten_nrw.csv` contains the 500 generated vignettes
 and must be present for the analysis. It includes the following columns:
 
 | Column | Description |
@@ -51,31 +51,14 @@ This will:
 
 ## Individual Modules
 
-## Only statistical analysis (requires analyzed_data.csv)
-
 ```bash
-python scripts/statistics.py
-```
-
-## Only SBERT validation
-
-```bash
-python scripts/sbert_validator.py
-```
-
-## Only visualizations (requires analyzed_data.csv)
-```bash
-python scripts/visualizations.py
-```
-
-## Only statistical analysis (requires analyzed_data.csv)
+# Only statistical analysis (requires analyzed_data.csv)
 python scripts/statistics.py
 
-## Only SBERT validation
+# Only SBERT validation
 python scripts/sbert_validator.py
 
-## Only visualizations (requires analyzed_data.csv)
-```bash
+# Only visualizations (requires analyzed_data.csv)
 python scripts/visualizations.py
 ```
 
@@ -110,7 +93,7 @@ provided CSV file), you will need API keys for:
 - Google (Gemini 3.1 Pro)
 - Groq (Llama 3)
 
-Copy `.env. example` to `.env` and add your keys:
+Copy `.env.example` to `.env` and add your keys:
 
 ```bash
 
