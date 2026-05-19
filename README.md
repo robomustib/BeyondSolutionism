@@ -189,7 +189,7 @@ This project is licensed under the **Creative Commons Attribution-NonCommercial 
 You are free to share and adapt the material for non-commercial purposes, provided you give appropriate credit. Commercial use is not permitted without prior consent.  
 For details, see the [LICENSE](LICENSE) file.
 
-Copyright (c) 2026 Mustafa Bilgin
+Copyright (c) 2026 Mustafa Bilgin and Bettina Ötvös
 
 ## Citation
 
