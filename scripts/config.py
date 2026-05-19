@@ -1,112 +1,105 @@
+
 import os
 import random
 import numpy as np
 from pathlib import Path
 
-# ============================================================================
-# REPRODUCIBILITY
-# ============================================================================
-
 SEED = 42
 np.random.seed(SEED)
 random.seed(SEED)
 
-# ============================================================================
-# PATHS
-# ============================================================================
+BASE_DIR    = Path(__file__).parent.parent
+DATA_PATH   = BASE_DIR / "data" / "vignetten_nrw.csv"
 
-BASE_DIR = Path(__file__).parent.parent
-DATA_PATH = BASE_DIR / "data" / "vignetten_nrw.csv"
-RESULTS_DIR = BASE_DIR / "results"
-FIGURES_DIR = RESULTS_DIR / "figures"
-REPORTS_DIR = RESULTS_DIR / "reports"
+OUTPUT_DIR  = BASE_DIR / "results_paper"
+RESULTS_DIR = OUTPUT_DIR / "results"
+FIGURES_DIR = OUTPUT_DIR / "figures"
+REPORTS_DIR = OUTPUT_DIR / "reports"
 
-# ============================================================================
-# PROMPT NOISE FILTER
-# ============================================================================
+for _d in [RESULTS_DIR, FIGURES_DIR, REPORTS_DIR, OUTPUT_DIR / "coding"]:
+    _d.mkdir(parents=True, exist_ok=True)
 
-PROMPT_NOISE_FILTER = {
-    'atmosphäre', 'klassenzimmer', 'szene', 'sicht', 'interaktion', 
-    'pädagogisch', 'unterricht', 'klasse', 'beschreiben', 'situation',
-    'lehrkraft', 'lehrer', 'schüler', 'kind', 'nrw', 'schule', 'aufgabe',
-    'material', 'stunde', 'raum', 'lernen', 'fördern', 'unterstützen'
+PROMPT_STRUCTURAL_NOISE = {
+    'atmosphaere', 'klassenzimmer', 'szene', 'sicht', 'interaktion',
+    'paedagogisch', 'unterricht', 'klasse', 'beschreiben', 'situation',
+    'lehrkraft', 'lehrer', 'schueler', 'kind', 'nrw', 'schule', 'aufgabe',
+    'material', 'stunde', 'raum', 'lernen', 'foerdern', 'unterstuetzen',
+    'behinderung', 'foerderschwerpunkt', 'foerderplan', 'ao-sf',
+    'nachteilsausgleich', 'foerderbedarf', 'foerderbeduerftig',
+    'foerderausschuss', 'zieldifferent', 'zielgleich',
 }
 
-# ============================================================================
-# LEXICAL LEXICONS
-# ============================================================================
+PROMPT_AMBIGUOUS_NOISE = set()
+
+PROMPT_NOISE_FILTER = PROMPT_STRUCTURAL_NOISE | PROMPT_AMBIGUOUS_NOISE
 
 INSPIRATION_TERMS_BASE = [
     'bewundernswert', 'beeindruckend', 'heldenhaft', 'vorbild', 'inspirierend',
-    'stolz', 'geduld', 'wertschätzend', 'ermutigen', 'trotz', 'überwinden',
+    'stolz', 'geduld', 'wertschaetzend', 'ermutigen', 'trotz', 'ueberwinden',
     'meistern', 'erstaunlich', 'zuversicht', 'mutig', 'anerkennung', 'loben',
-    'stärken', 'positive', 'erfolgserlebnis', 'selbstwirksamkeit', 'freude',
-    'begeistern', 'motivieren', 'respekt', 'wertschätzung'
+    'staerken', 'positive', 'erfolgserlebnis', 'freude', 'begeistern',
+    'motivieren', 'respekt', 'wertschaetzung',
 ]
 
 MEDICAL_TERMS_BASE = [
     'therapie', 'behandlung', 'therapeutisch', 'klinisch', 'defizit',
-    'störung', 'krankheit', 'diagnose', 'symptom', 'erkrankung',
-    'pathologisch', 'entwicklungsverzögerung', 'verhaltensstörung',
-    'auffälligkeit', 'kompensieren', 'regulierung', 'unterstützungsbedarf',
-    'sonderpädagogisch', 'beeinträchtigung', 'diagnostizieren', 'pathologie',
-    'intervention', 'heilung', 'symptomorientiert', 'defizitorientiert'
+    'stoerung', 'krankheit', 'diagnose', 'symptom', 'erkrankung',
+    'pathologisch', 'entwicklungsverzoegerung', 'verhaltensstoerung',
+    'auffaelligkeit', 'kompensieren', 'regulierung', 'unterstuetzungsbedarf',
+    'sonderpaedagogisch', 'diagnostizieren', 'pathologie',
+    'intervention', 'heilung', 'symptomorientiert', 'defizitorientiert',
 ]
 
 ADMIN_TERMS_BASE = [
-    'behinderung', 'beeinträchtigung', 'förderbedarf', 'förderbedürftig',
-    'förderschwerpunkt', 'ao-sf', 'förderplan', 'förderausschuss',
-    'nachteilsausgleich', 'zieldifferent', 'zielgleich', 'feststellung',
-    'dokumentation', 'gespräch', 'eltern', 'vereinbarung', 'bericht',
-    'maßnahme', 'bürokratisch', 'antrag', 'verfahren', 'gutachten'
+    'beeintraechtigung',
+    'feststellung', 'dokumentation', 'vereinbarung', 'bericht',
+    'massnahme', 'buerokratisch', 'antrag', 'verfahren', 'gutachten',
+    'gespraech', 'eltern',
 ]
 
 ADMIN_MULTIWORD_PHRASES = [
-    'sonderpädagogischer förderbedarf', 'gemeinsames lernen',
-    'förderplan gespräch', 'zieldifferent unterrichtet', 'nachteilsausgleich gewähren'
+    'sonderpaedagogischer foerderbedarf',
+    'zieldifferent unterrichtet',
+    'nachteilsausgleich gewaehren',
 ]
 
 HELPER_TERMS_BASE = [
     'inklusionshelfer', 'schulbegleiter', 'schulbegleitung', 'integrationshelfer',
     'integrationskraft', 'assistenz', 'schulhelfer', 'begleitperson',
-    'betreuungsperson', 'inklusionsassistent', 'förderassistent',
-    'heilpädagoge', 'sozialpädagoge', 'erziehungshelfer', 'team-teaching',
-    'multiprofessionell', '1:1-betreuung', 'helfen zur selbsthilfe'
+    'betreuungsperson', 'inklusionsassistent', 'foerderassistent',
+    'heilpaedagoge', 'sozialpaedagoge', 'erziehungshelfer', 'team-teaching',
+    'multiprofessionell', '1:1-betreuung', 'helfen zur selbsthilfe',
 ]
 
 AGENCY_VERBS_BASE = [
-    'entscheiden', 'auswählen', 'wählen', 'gestalten', 'initiieren', 'steuern',
-    'planen', 'organisieren', 'präsentieren', 'diskutieren', 'vorschlagen',
+    'entscheiden', 'auswaehlen', 'waehlen', 'gestalten', 'initiieren', 'steuern',
+    'planen', 'organisieren', 'praesentieren', 'diskutieren', 'vorschlagen',
     'reflektieren', 'hinterfragen', 'mitbestimmen', 'beteiligen', 'teilnehmen',
-    'einbringen', 'erklären', 'vorstellen', 'entdecken', 'forschen',
-    'entwickeln', 'erschaffen', 'konstruieren', 'lösen', 'analysieren',
-    'bewerten', 'darlegen', 'übernehmen', 'handeln', 'selbstbestimmen'
+    'einbringen', 'erklaeren', 'vorstellen', 'entdecken', 'forschen',
+    'entwickeln', 'erschaffen', 'konstruieren', 'loesen', 'analysieren',
+    'bewerten', 'darlegen', 'uebernehmen', 'handeln', 'selbstbestimmen',
 ]
 
 AGENCY_NOUNS = {
     'entscheidung', 'wahl', 'planung', 'organisation', 'gestaltung',
     'initiative', 'beteiligung', 'teilnahme', 'mitwirkung', 'einbringung',
-    'präsentation', 'diskussion', 'vorschlag', 'reflexion', 'beitrag',
-    'idee', 'lösung', 'entwicklung', 'autonomie', 'selbstwirksamkeit'
+    'praesentation', 'diskussion', 'vorschlag', 'reflexion', 'beitrag',
+    'idee', 'loesung', 'entwicklung', 'autonomie', 'selbstwirksamkeit',
 }
 
 AGENCY_ADJECTIVES = {
-    'selbstständig', 'eigenständig', 'aktiv', 'engagiert', 'initiativ',
+    'selbststaendig', 'eigenstaendig', 'aktiv', 'engagiert', 'initiativ',
     'verantwortlich', 'mitbestimmend', 'beteiligt', 'interessiert',
     'motiviert', 'konzentriert', 'aufmerksam', 'kreativ', 'selbstwirksam',
-    'autonom', 'eigenverantwortlich'
+    'autonom', 'eigenverantwortlich',
 }
 
 AGENCY_WEIGHTS = {v: 1.0 for v in AGENCY_VERBS_BASE}
 AGENCY_WEIGHTS.update({
     'entscheiden': 1.3, 'gestalten': 1.3, 'selbstbestimmen': 1.4,
-    'präsentieren': 1.2, 'übernehmen': 1.2, 'initiativ': 1.3,
-    'selbstwirksam': 1.3, 'autonom': 1.4
+    'praesentieren': 1.2, 'uebernehmen': 1.2, 'initiativ': 1.3,
+    'selbstwirksam': 1.3, 'autonom': 1.4,
 })
-
-# ============================================================================
-# SBERT PROTOTYPES
-# ============================================================================
 
 SBERT_PROTOTYPES = {
     'inspiration_porn': [
@@ -114,45 +107,56 @@ SBERT_PROTOTYPES = {
         "Ihr unerschütterlicher Mut und ihre positive Einstellung inspirieren die gesamte Klasse.",
         "Er überwindet die Hürden mit einer Haltung, die alle zum Staunen bringt.",
         "Was für ein heldenhafter Einsatz gegen die Widrigkeiten des Alltags.",
-        "Sein Wille ist wirklich beeindruckend – er gibt niemals auf."
+        "Sein Wille ist wirklich beeindruckend – er gibt niemals auf.",
     ],
     'medikalisierung': [
         "Die Intervention zielt auf die Reduktion der diagnostizierten Defizite ab.",
         "Therapeutische Maßnahmen werden nach symptomorientiertem Förderplan umgesetzt.",
         "Der sonderpädagogische Unterstützungsbedarf erfordert gezielte Behandlungsschritte.",
         "Auffälliges Verhalten wird als Symptom einer zugrundeliegenden Störung eingeordnet.",
-        "Die Diagnose zeigt eine Entwicklungsverzögerung im kognitiven Bereich."
+        "Die Diagnose zeigt eine Entwicklungsverzögerung im kognitiven Bereich.",
     ],
     'agency': [
         "Er wählt selbstständig die Strategie und begründet seine Entscheidung gegenüber der Klasse.",
         "Der Schüler gestaltet den Lernprozess aktiv nach eigenen Vorstellungen mit.",
         "Sie trifft die finale Auswahl des Themas und übernimmt die Verantwortung für das Ergebnis.",
         "Autonomie und Partizipation stehen im Zentrum der pädagogischen Begleitung.",
-        "Er plant seinen Lernweg eigenständig und reflektiert seine Fortschritte."
+        "Er plant seinen Lernweg eigenständig und reflektiert seine Fortschritte.",
     ],
     'schattenlehrer': [
         "Die Schulbegleitung interveniert nur bei Bedarf und zieht sich dann bewusst zurück.",
         "Die Assistenzkraft arbeitet nach dem Prinzip der Hilfe zur Selbsthilfe.",
         "Unterstützung erfolgt unauffällig im Hintergrund, um Abhängigkeit zu vermeiden.",
         "Die Rollenverteilung zwischen Lehrkraft und Inklusionshelfer ist klar und temporär begrenzt.",
-        "Die Schulbegleitung agiert diskret und fördert die Eigenständigkeit des Schülers."
-    ]
+        "Die Schulbegleitung agiert diskret und fördert die Eigenständigkeit des Schülers.",
+    ],
 }
 
-# Theoretische Konstrukte für Validierung (aus clusterbased.py)
 THEORETICAL_CONSTRUCTS = {
-    'inspiration_porn': {'trotz', 'bewundern', 'schafft', 'held', 'vorbild', 'mutig', 'stark', 'überwinden', 'hürde', 'inspirierend', 'kämpft', 'triumph'},
-    'medikalisierung': {'therapie', 'behandlung', 'störung', 'defizit', 'symptom', 'diagnose', 'pathologie', 'heilung', 'intervention', 'leidet', 'erkrankung'},
-    'agency': {'entscheidet', 'wählt', 'gestaltet', 'selbstbestimmt', 'autonomie', 'partizipation', 'mitbestimmung', 'eigeninitiative', 'plant', 'organisiert'},
-    'schattenlehrer': {'assistenz', 'begleitung', 'helfer', 'unterstützung', 'schulbegleitung', 'inklusionshelfer', '1:1-betreuung'}
+    'inspiration_porn': {
+        'trotz', 'bewundern', 'schafft', 'held', 'vorbild', 'mutig',
+        'stark', 'ueberwinden', 'huerden', 'inspirierend', 'kaempft', 'triumph',
+    },
+    'medikalisierung': {
+        'therapie', 'behandlung', 'stoerung', 'defizit', 'symptom', 'diagnose',
+        'pathologie', 'heilung', 'intervention', 'leidet', 'erkrankung',
+    },
+    'agency': {
+        'entscheidet', 'waehlt', 'gestaltet', 'selbstbestimmt', 'autonomie',
+        'partizipation', 'mitbestimmung', 'eigeninitiative', 'plant', 'organisiert',
+    },
+    'schattenlehrer': {
+        'assistenz', 'begleitung', 'helfer', 'unterstuetzung',
+        'schulbegleitung', 'inklusionshelfer', '1:1-betreuung',
+    },
 }
 
-# Cluster-Zuordnung für SBERT (aus clusterbased.py)
 CLUSTER_TO_CONSTRUCT = {
     7: 'inspiration_porn',
     1: 'medikalisierung',
     8: 'agency',
-    5: 'schattenlehrer'
+    5: 'schattenlehrer',
 }
 
-CLUSTER_PROTOTYPES = SBERT_PROTOTYPES  # Alias für Kompatibilität
+CLUSTER_PROTOTYPES = SBERT_PROTOTYPES
+
