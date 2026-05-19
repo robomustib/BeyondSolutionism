@@ -196,7 +196,7 @@ Copyright (c) 2026 Mustafa Bilgin and Bettina Ötvös
 If you use this software for your research, please cite it as follows:
 
 **APA Format:**
-> Bilgin, M., & Ötvös, B. (2026). *Beyond Solutionism: A Critical Audit of Techno-Ableism in AI-Generated Educational Narratives* (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.19432611
+> Bilgin, M., & Ötvös, B. (2026). *Beyond Solutionism: A Critical Audit of Techno-Ableism in AI-Generated Educational Narratives* (Version 1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.20281476
 
 **BibTeX:**
 ```bibtex
@@ -207,7 +207,7 @@ If you use this software for your research, please cite it as follows:
   year      = {2026},
   publisher = {Zenodo},
   version   = {1.0.0},
-  doi       = {10.5281/zenodo.19432611},
-  url       = {https://doi.org/10.5281/zenodo.19432611}
+  doi       = {10.5281/zenodo.20281476},
+  url       = {https://doi.org/10.5281/zenodo.20281476}
 }
 ```
