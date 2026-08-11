@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from config import SEED, DATA_PATH, OUTPUT_DIR, RESULTS_DIR, FIGURES_DIR, REPORTS_DIR
 from analyzer import ContextSensitiveAnalyzer
-from statistics import BiasAuditor, generate_power_analysis_report
+from bias_statistics import BiasAuditor, generate_power_analysis_report
 from visualizations import AdvancedVisualizer
 from sbert_validator import SBERTValidator
 
