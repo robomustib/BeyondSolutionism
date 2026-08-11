@@ -63,14 +63,33 @@ This will:
 python scripts/analyzer.py
 
 # Only statistical analysis (requires analyzed_data.csv)
-python scripts/statistics.py
+python scripts/bias_statistics.py
 
 # Only SBERT construct validation
 python scripts/sbert_validator.py
 
 # Only visualizations (requires analyzed_data.csv)
 python scripts/visualizations.py
+
+# Stage 2 empirical lexicon validation (ROC-AUC and lexicon overlap F1)
+python scripts/stage2_lexicon_validation.py
 ```
+
+### Note on the Stage 2 F1 value
+
+The F1 reported by `stage2_lexicon_validation.py` measures the overlap between
+two word sets, not classification accuracy. Precision is the share of the thirty
+strongest empirical TF-IDF terms that also occur in a theoretical lexicon, recall
+is the share of the theoretical lexicon covered by those terms. A value of zero
+means the empirically discriminating vocabulary and the theoretically derived
+vocabulary do not intersect.
+
+### Note on module naming
+
+The statistics module is named `bias_statistics.py` rather than `statistics.py`
+so that it does not shadow the Python standard library module of the same name.
+Shadowing it breaks any import of `seaborn`, and therefore `sbert_validator.py`
+and `visualizations.py`.
 
 ## Expected Outputs
 
